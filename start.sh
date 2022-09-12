@@ -12,8 +12,11 @@ if ! screen -list | fgrep -q ".conanex"; then
   if ! screen -list | fgrep -q ".conanex"; then
     echo -e "\E[0;31mServer couldn't be started.."
     tput sgr0
+    exit 1
   fi
 else
   echo -e "\E[0;31mServer is already running."
   tput sgr0
 fi
+
+exit 0
