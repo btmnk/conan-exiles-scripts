@@ -2,13 +2,14 @@
 
 APPID_Mods=440900
 INSTALL_DIR=/home/steam/games/conanex
+MODS_IDS_FILE="$INSTALL_DIR/mods.txt"
 MODS_MODLIST_FILE="$INSTALL_DIR/ConanSandbox/Mods/modlist.txt"
 
 INSTALL_MODS=""
 
 while read modid; do
 	INSTALL_MODS+="+workshop_download_item $APPID_Mods $modid "
-done < mods.txt
+done < "$MODS_IDS_FILE"
 
 if [ "$INSTALL_MODS" == "" ]; then
 	echo "No mods detected. Skip."
@@ -36,6 +37,6 @@ else
 
             done
         fi
-	done < mods.txt
+	done < "$MODS_IDS_FILE"
 fi
 

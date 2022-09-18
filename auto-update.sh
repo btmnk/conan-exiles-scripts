@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 
 address="0.0.0.0:25575"
-password="karamellexplosion"
+password=$1
+
+if [ -z "$pasword" ]; then
+	echo "Password not provided!"
+	exit 1
+fi
+
 webhookurl="https://discord.com/api/webhooks/1001523731975389225/sDV1l1SKFDvUH1sTXtQc81mbbKNZKN55KcmiXaWOxT0roli-tl0txwlyUnw4TLTvLD81"
 
 rcon_prefix="rcon -a $address -p $password"
