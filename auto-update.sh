@@ -3,7 +3,7 @@
 address="0.0.0.0:25575"
 password=$1
 
-if [ -z "$pasword" ]; then
+if [ -z "$password" ]; then
 	echo "Password not provided!"
 	exit 1
 fi
