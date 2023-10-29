@@ -2,14 +2,14 @@
 
 . config
 
-APPID_Mods=440900
+APPID_MODS=440900
 MODS_IDS_FILE="./mods.txt"
 MODS_MODLIST_FILE="$SERVER_DIR/ConanSandbox/Mods/modlist.txt"
 
 INSTALL_MODS=""
 
 while read modid; do
-	INSTALL_MODS+="+workshop_download_item $APPID_Mods $modid "
+	INSTALL_MODS+="+workshop_download_item $APPID_MODS $modid "
 done < "$MODS_IDS_FILE"
 
 if [ "$INSTALL_MODS" == "" ]; then
@@ -22,19 +22,19 @@ else
 
 	# clear modlist.txt
 	rm $MODS_MODLIST_FILE
+	touch $MODS_MODLIST_FILE
 
 	# create modlist.txt
 	while read modid; do
-		if [ -d $SERVER_DIR/steamapps/workshop/content/$APPID_Mods/$modid ] 
+		if [ -d $SERVER_DIR/steamapps/workshop/content/$APPID_MODS/$modid ] 
         then
-            for filename in $(cd $SERVER_DIR/steamapps/workshop/content/$APPID_Mods/$modid && find -name "*.pak")
+            for filename in $(cd $SERVER_DIR/steamapps/workshop/content/$APPID_MODS/$modid && find -name "*.pak")
             do
 
                 filename="$(basename "$filename")"
 
                 echo "Enabling Mod $modid. Adding pak-file for mod: '$filename'"
-                # We need the Wine Path
-                echo "$SERVER_DIR/steamapps/workshop/content/$APPID_Mods/$modid/$filename" >> $MODS_MODLIST_FILE
+                echo "$SERVER_DIR/steamapps/workshop/content/$APPID_MODS/$modid/$filename" >> $MODS_MODLIST_FILE
 
             done
         fi
