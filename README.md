@@ -1,4 +1,4 @@
-# conan-exiles-dedicated
+# conan-exiles-scripts
 
 Utility bash files for an easy setup &amp; maintenance of a Conan Exiles server
 
