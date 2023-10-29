@@ -13,6 +13,7 @@ if [ -z "$WINE_PREFIX" ]; then
 fi
 
 export WINEARCH=win64
+export WINEPREFIX=$WINE_PREFIX
 
 echo "--- Checking if WINE is properly installed"
 if [ ! -d ${WINE_PREFIX}/drive_c/windows ]; then

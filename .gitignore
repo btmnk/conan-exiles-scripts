@@ -1,5 +1,4 @@
-.*
-config
+*
 !.gitignore
 !auto-update.sh
 !autobackup.sh
