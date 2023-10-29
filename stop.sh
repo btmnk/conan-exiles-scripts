@@ -4,6 +4,7 @@
 
 if [ -z "$SCREEN_NAME" ]; then
   echo "SCREEN_NAME config was not set!"
+  exit 1
 fi
 
 echo "Stopping Conan-Exiles-Server..."
