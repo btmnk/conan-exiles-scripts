@@ -3,7 +3,7 @@
 . config
 
 APPID_Mods=440900
-MODS_IDS_FILE="$SERVER_DIR/mods.txt"
+MODS_IDS_FILE="./mods.txt"
 MODS_MODLIST_FILE="$SERVER_DIR/ConanSandbox/Mods/modlist.txt"
 
 INSTALL_MODS=""
