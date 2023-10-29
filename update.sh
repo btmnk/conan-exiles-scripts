@@ -2,4 +2,4 @@
 
 . config
 
-steamcmd +@sSteamCmdForcePlatformType windows +login anonymous +force_install_dir $SERVER_DIR +app_update 443030 +exit
+steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir $SERVER_DIR +login anonymous +app_update 443030 +exit

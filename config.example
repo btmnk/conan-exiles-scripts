@@ -1,5 +1,6 @@
 SCREEN_NAME=conanexiles
 SERVER_DIR=/srv/conanexiles/server
+BACKUP_DIR=/srv/conanexiles/backups
 
 WEBHOOK=changeme
 RCON_PW=changeme
