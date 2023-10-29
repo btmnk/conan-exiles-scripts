@@ -7,16 +7,15 @@ if [ -z "$SERVER_DIR" ]; then
   exit 1
 fi
 
-if [ -z "$WINEPREFIX" ]; then
+if [ -z "$WINE_PREFIX" ]; then
   echo "WINEPREFIX config was not set!"
   exit 1
 fi
 
 export WINEARCH=win64
-export WINEPREFIX=$WINEPREFIX
 
 echo "--- Checking if WINE is properly installed"
-if [ ! -d ${WINEPREFIX}/drive_c/windows ]; then
+if [ ! -d ${WINE_PREFIX}/drive_c/windows ]; then
   echo "--- Setting up WINE"
     cd ${SERVER_DIR}
     winecfg > /dev/null 2>&1
