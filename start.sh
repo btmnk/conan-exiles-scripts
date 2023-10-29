@@ -11,7 +11,17 @@ if [ -z "$SERVER_DIR" ]; then
 fi
 
 export WINEARCH=win64
-export WINEPREFIX=/home/steam/.wine64
+export WINEPREFIX=$WINEPREFIX
+
+echo "--- Checking if WINE is properly installed ---"
+if [ ! -d ${WINEPREFIX}/drive_c/windows ]; then
+  echo "--- Setting up WINE ---"
+    cd ${SERVER_DIR}
+    winecfg > /dev/null 2>&1
+    sleep 15
+else
+  echo "--- WINE properly set up ---"
+fi
 
 app_exe="$SERVER_DIR/ConanSandboxServer.exe"
 
