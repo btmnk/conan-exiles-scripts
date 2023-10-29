@@ -4,7 +4,9 @@
 
 APPID_MODS=440900
 MODS_IDS_FILE="./mods.txt"
-MODS_MODLIST_FILE="$SERVER_DIR/ConanSandbox/Mods/modlist.txt"
+
+MODS_DIR="$SERVER_DIR/ConanSandbox/Mods"
+MODS_MODLIST_FILE="$MODS_DIR/modlist.txt"
 
 INSTALL_MODS=""
 
@@ -20,11 +22,14 @@ else
 	echo "$INSTALL_COMMAND"
 	eval "$INSTALL_COMMAND"
 
-	# clear modlist.txt
+	# Create mods dir if it does not exist yet
+	mkdir -p $MODS_DIR
+
+	# Reset modlist.txt
 	rm $MODS_MODLIST_FILE
 	touch $MODS_MODLIST_FILE
 
-	# create modlist.txt
+	# Fill modlist.txt
 	while read modid; do
 		if [ -d $SERVER_DIR/steamapps/workshop/content/$APPID_MODS/$modid ] 
         then
