@@ -1,6 +1,8 @@
 #!/bin/bash
 
-src="/home/steam/games/conanex/ConanSandbox"
+. config
+
+src="$SERVER_DIR/ConanSandbox"
 dest="/home/steam/games/conanex/Backup"
 
 # Create archive filename.

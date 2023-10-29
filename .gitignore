@@ -1,0 +1,12 @@
+.*
+config
+!.gitignore
+!auto-update.sh
+!autobackup.sh
+!config.example
+!mods.txt
+!README.md
+!start.sh
+!stop.sh
+!update-mods.sh
+!update.sh

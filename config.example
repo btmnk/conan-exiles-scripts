@@ -1,0 +1,6 @@
+SCREEN_NAME=conanexiles
+SERVER_DIR=/srv/conanexiles/server
+
+WEBHOOK=changeme
+RCON_PW=changeme
+RCON_PORT=25575

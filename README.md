@@ -1,20 +1,14 @@
 # conan-exiles-dedicated
-Utility bash files for an easy setup &amp; maintenance of a conan exiles server
 
-## Setup
+Utility bash files for an easy setup &amp; maintenance of a Conan Exiles server
 
-### SteamCMD
+## Requirements
 
-```
-sudo apt install lib32gcc1 software-properties-common steamcmd
-```
-
-### Wine
+- wine [Installation](https://wiki.winehq.org/Ubuntu)
+- steamcmd
+- xvfb
+- screen
 
 ```
-sudo apt-add-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ focal main'
-sudo apt update
-sudo apt install --install-recommends winehq-stable
-sudo apt install screen xvfb winetricks
-winetricks
+apt install winehq-stable screen xvfb lib32gcc1 software-properties-common steamcmd
 ```

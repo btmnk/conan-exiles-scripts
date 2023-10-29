@@ -1,30 +1,30 @@
 #!/usr/bin/env bash
 
-address="0.0.0.0:25575"
-password=$1
+. config
 
-if [ -z "$password" ]; then
-	echo "Password not provided!"
+address="0.0.0.0:$RCON_PORT"
+
+if [ -z "$RCON_PW" ]; then
+	echo "Rcon password not set in config!"
 	exit 1
 fi
 
-webhookurl="https://discord.com/api/webhooks/1001523731975389225/sDV1l1SKFDvUH1sTXtQc81mbbKNZKN55KcmiXaWOxT0roli-tl0txwlyUnw4TLTvLD81"
+rcon_prefix="rcon -a $address -p $RCON_PW"
 
-rcon_prefix="rcon -a $address -p $password"
+app_update_script="$SERVER_DIR/update.sh"
+mod_update_script="$SERVER_DIR/update-mods.sh"
+stop_script="$SERVER_DIR/stop.sh"
+start_script="$SERVER_DIR/start.sh"
 
-root_dir="/home/steam/games/conanex"
-app_update_script="$root_dir/update.sh"
-mod_update_script="$root_dir/update-mods.sh"
-stop_script="$root_dir/stop.sh"
-start_script="$root_dir/start.sh"
+send_webhook() {
+  if [ -z "$WEBHOOK" ]; then
+    eval "discordsh --webhook-url='$WEBHOOK' --text '$1'"
+  fi
+}
 
 send_message() {
   send_webhook "$1"
   eval "$rcon_prefix 'server $1'"
-}
-
-send_webhook() {
-  eval "discordsh --webhook-url='$webhookurl' --text '$1'"
 }
 
 check_error() {
