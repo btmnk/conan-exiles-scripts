@@ -15,7 +15,7 @@ export default defineCommand({
   handler: async ({ flags, shell, colors }) => {
     const cfg = loadConfig(flags.config);
     const { dir, binary } = cfg.server;
-    const { session, width, height } = cfg.tmux;
+    const { session } = cfg.tmux;
     const { map, name, max_players, port, query_port, rcon_port, rcon_enabled } = cfg.params;
 
     const sessionRunning = await shell`tmux has-session -t ${session}`.nothrow().quiet();
@@ -58,7 +58,7 @@ export default defineCommand({
       `-userdir=${dir}/ConanSandbox`,
     ].join(" ");
 
-    await shell`tmux new-session -d -s ${session} -x ${width} -y ${height}`;
+    await shell`tmux new-session -d -s ${session}`;
     await shell`tmux send-keys -t ${session} ${launchCmd} Enter`;
 
     console.log(colors.green(`Server started in tmux session '${session}'.`));

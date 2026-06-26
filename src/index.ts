@@ -1,5 +1,7 @@
 import { createCLI } from "@bunli/core";
+import initCommand from "./commands/init.ts";
 import installCommand from "./commands/install.ts";
+import backupCommand from "./commands/backup.ts";
 import updateCommand from "./commands/update.ts";
 import startCommand from "./commands/start.ts";
 import stopCommand from "./commands/stop.ts";
@@ -12,7 +14,9 @@ const cli = await createCLI({
   description: "Conan Exiles dedicated server management",
 });
 
+cli.command(initCommand);
 cli.command(installCommand);
+cli.command(backupCommand);
 cli.command(updateCommand);
 cli.command(startCommand);
 cli.command(stopCommand);

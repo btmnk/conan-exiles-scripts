@@ -30,17 +30,19 @@ const updateCommand = defineCommand({
   },
   handler: async ({ flags, shell, colors }) => {
     const cfg = loadConfig(flags.config);
-    const { dir, steamcmd_dir } = cfg.server;
+    const { dir, steamcmd } = cfg.server;
     const { app_id, list } = cfg.mods;
-    const steamcmdBin = `${steamcmd_dir}/steamcmd.sh`;
 
     if (list.length === 0) {
       console.log(colors.yellow("No mods configured. Add mods to the `mods.list` section in config.yaml."));
       return;
     }
 
-    if (!existsSync(steamcmdBin)) {
-      console.error(`SteamCMD not found at ${steamcmdBin}. Run \`conan install\` first.`);
+    const steamcmdCheck = await shell`${steamcmd} +quit`.nothrow().quiet();
+    if (steamcmdCheck.exitCode !== 0) {
+      console.error(colors.yellow(`SteamCMD not working: ${steamcmd}`));
+      console.error(`Install SteamCMD first, then set server.steamcmd in config.yaml if it is not on PATH.`);
+      console.error(`  https://developer.valvesoftware.com/wiki/SteamCMD#Downloading_SteamCMD`);
       process.exit(1);
     }
 
@@ -53,7 +55,7 @@ const updateCommand = defineCommand({
     const workshopArgs = list.flatMap((m) => ["+workshop_download_item", app_id, m.id]);
 
     // +@sSteamCmdForcePlatformType windows — mods are published as Windows Workshop items
-    await shell`${steamcmdBin} +@sSteamCmdForcePlatformType windows +force_install_dir ${dir} +login anonymous ${workshopArgs} +quit`;
+    await shell`${steamcmd} +@sSteamCmdForcePlatformType windows +force_install_dir ${dir} +login anonymous ${workshopArgs} +quit`;
 
     // Build modlist.txt
     const modsContentDir = join(dir, "steamapps/workshop/content", app_id);

@@ -14,8 +14,7 @@ export default defineCommand({
   },
   handler: async ({ flags, shell, colors }) => {
     const cfg = loadConfig(flags.config);
-    const { user, dir, steamcmd_dir, steam_app_id, binary } = cfg.server;
-    const steamcmdBin = `${steamcmd_dir}/steamcmd.sh`;
+    const { user, dir, steamcmd, steam_app_id, binary } = cfg.server;
 
     const currentUser = (await shell`id -un`.text()).trim();
     if (currentUser !== user) {
@@ -26,19 +25,17 @@ export default defineCommand({
       );
     }
 
-    if (!existsSync(steamcmdBin)) {
-      console.log(colors.green("Installing SteamCMD..."));
-      await shell`mkdir -p ${steamcmd_dir}`;
-      await shell`curl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar -xz -C ${steamcmd_dir}`;
-      await shell`chmod +x ${steamcmdBin}`;
-      console.log(colors.green(`SteamCMD installed: ${steamcmd_dir}`));
-    } else {
-      console.log(`SteamCMD already present: ${steamcmd_dir}`);
+    const steamcmdCheck = await shell`${steamcmd} +quit`.nothrow().quiet();
+    if (steamcmdCheck.exitCode !== 0) {
+      console.error(colors.yellow(`SteamCMD not working: ${steamcmd}`));
+      console.error(`Install SteamCMD first, then set server.steamcmd in config.yaml if it is not on PATH.`);
+      console.error(`  https://developer.valvesoftware.com/wiki/SteamCMD#Downloading_SteamCMD`);
+      process.exit(1);
     }
 
     console.log(colors.green(`Downloading server files (App ID: ${steam_app_id})...`));
     await shell`mkdir -p ${dir}`;
-    await shell`${steamcmdBin} +force_install_dir ${dir} +login anonymous +app_update ${steam_app_id} validate +quit`;
+    await shell`${steamcmd} +force_install_dir ${dir} +login anonymous +app_update ${steam_app_id} validate +quit`;
 
     const binaryPath = `${dir}/${binary}`;
     if (existsSync(binaryPath)) {

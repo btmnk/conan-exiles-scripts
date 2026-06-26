@@ -11,6 +11,7 @@
       },
       "devDependencies": {
         "@types/bun": "latest",
+        "@types/node": "^26.0.1",
         "bunli": "^0.9.1",
       },
     },

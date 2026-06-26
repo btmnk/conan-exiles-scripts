@@ -3,43 +3,7 @@ import { existsSync } from "fs";
 import { join } from "path";
 import { z } from "zod";
 import { loadConfig } from "../config.ts";
-
-async function backupSaves(
-  shell: typeof Bun.$,
-  serverDir: string,
-  backupDir: string,
-  keep: number,
-  colors: { green: (s: string) => string; yellow: (s: string) => string }
-) {
-  const savedDir = join(serverDir, "ConanSandbox/Saved");
-  if (!existsSync(savedDir)) return;
-
-  const timestamp = new Date()
-    .toISOString()
-    .replace(/[:.]/g, "")
-    .replace("T", "_")
-    .slice(0, 15);
-  const dest = join(backupDir, `save_${timestamp}`);
-
-  await shell`mkdir -p ${backupDir}`;
-  console.log(colors.green(`Creating backup: ${dest}`));
-  await shell`cp -r ${savedDir} ${dest}`;
-
-  // Prune old backups
-  const list = (await shell`find ${backupDir} -maxdepth 1 -type d -name "save_*"`.text())
-    .trim()
-    .split("\n")
-    .filter(Boolean)
-    .sort();
-
-  if (list.length > keep) {
-    const toDelete = list.slice(0, list.length - keep);
-    for (const old of toDelete) {
-      await shell`rm -rf ${old}`.quiet();
-    }
-    console.log(colors.yellow(`Pruned ${toDelete.length} old backup(s), kept ${keep}.`));
-  }
-}
+import { backupSaves } from "../lib/backup.ts";
 
 export default defineCommand({
   name: "update",
@@ -57,10 +21,9 @@ export default defineCommand({
   },
   handler: async ({ flags, shell, colors }) => {
     const cfg = loadConfig(flags.config);
-    const { user, dir, steamcmd_dir, steam_app_id, binary } = cfg.server;
+    const { user, dir, steamcmd, steam_app_id, binary } = cfg.server;
     const { session } = cfg.tmux;
     const backupDir = cfg.backups.dir || join(dir, "backups");
-    const steamcmdBin = `${steamcmd_dir}/steamcmd.sh`;
 
     const currentUser = (await shell`id -un`.text()).trim();
     if (currentUser !== user) {
@@ -88,15 +51,18 @@ export default defineCommand({
       console.log("Server stopped.");
     }
 
-    if (!existsSync(steamcmdBin)) {
-      console.error(`SteamCMD not found at ${steamcmdBin}. Run \`conan install\` first.`);
+    const steamcmdCheck = await shell`${steamcmd} +quit`.nothrow().quiet();
+    if (steamcmdCheck.exitCode !== 0) {
+      console.error(colors.yellow(`SteamCMD not working: ${steamcmd}`));
+      console.error(`Install SteamCMD first, then set server.steamcmd in config.yaml if it is not on PATH.`);
+      console.error(`  https://developer.valvesoftware.com/wiki/SteamCMD#Downloading_SteamCMD`);
       process.exit(1);
     }
 
     await backupSaves(shell, dir, backupDir, cfg.backups.keep, colors);
 
     console.log(colors.green(`Updating server (App ID: ${steam_app_id})...`));
-    await shell`${steamcmdBin} +force_install_dir ${dir} +login anonymous +app_update ${steam_app_id} validate +quit`;
+    await shell`${steamcmd} +force_install_dir ${dir} +login anonymous +app_update ${steam_app_id} validate +quit`;
 
     const binaryPath = `${dir}/${binary}`;
     if (existsSync(binaryPath)) {

@@ -10,7 +10,8 @@
     "strict": true,
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "types": ["bun-types", "node"]
   },
   "include": ["src/**/*", "bunli.config.ts"]
 }

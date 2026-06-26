@@ -12,14 +12,12 @@ export const ConfigSchema = z.object({
   server: z.object({
     user: z.string().default("steam"),
     dir: z.string(),
-    steamcmd_dir: z.string(),
+    steamcmd: z.string().default("steamcmd"),
     steam_app_id: z.coerce.string().default("443030"),
     binary: z.string().default("ConanSandboxServer.sh"),
   }),
   tmux: z.object({
     session: z.string().default("conan"),
-    width: z.number().int().default(220),
-    height: z.number().int().default(50),
   }),
   params: z.object({
     map: z.string().default("ConanSandbox"),
@@ -47,7 +45,7 @@ export function loadConfig(configPath?: string): Config {
   if (!existsSync(path)) {
     throw new Error(
       `Config file not found: ${path}\n` +
-        `Run the CLI from the directory containing config.yaml, or pass --config <path>.`
+        `Run \`conan init\` to create one, or pass --config <path>.`
     );
   }
   const raw = readFileSync(path, "utf-8");
