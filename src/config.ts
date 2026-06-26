@@ -27,6 +27,8 @@ export const ConfigSchema = z.object({
     query_port: z.number().int().default(27015),
     rcon_port: z.number().int().default(25575),
     rcon_enabled: z.boolean().default(true),
+    password: z.string().optional(),
+    admin_password: z.string().optional(),
   }),
   backups: z.object({
     keep: z.number().int().default(5),

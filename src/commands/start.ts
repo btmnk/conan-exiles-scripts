@@ -16,7 +16,7 @@ export default defineCommand({
     const cfg = loadConfig(flags.config);
     const { dir, binary } = cfg.server;
     const { session } = cfg.tmux;
-    const { map, name, max_players, port, query_port, rcon_port, rcon_enabled } = cfg.params;
+    const { map, name, max_players, port, query_port, rcon_port, rcon_enabled, password, admin_password } = cfg.params;
 
     const sessionRunning = await shell`tmux has-session -t ${session}`.nothrow().quiet();
     if (sessionRunning.exitCode === 0) {
@@ -54,9 +54,11 @@ export default defineCommand({
       `-RCONEnabled=${rcon_enabled}`,
       `-MaxPlayers=${max_players}`,
       `-ServerName="${name}"`,
+      password ? `-ServerPassword="${password}"` : null,
+      admin_password ? `-AdminPassword="${admin_password}"` : null,
       `-log`,
       `-userdir=${dir}/ConanSandbox`,
-    ].join(" ");
+    ].filter(Boolean).join(" ");
 
     await shell`tmux new-session -d -s ${session}`;
     await shell`tmux send-keys -t ${session} ${launchCmd} Enter`;
