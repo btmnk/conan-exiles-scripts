@@ -1,0 +1,56 @@
+# Conan Exiles server management configuration
+
+server:
+  # System user owning the server installation
+  user: steam
+  # Server installation directory
+  dir: /home/steam/exiles
+  # SteamCMD installation directory
+  steamcmd_dir: /home/steam/steamcmd
+  # Steam App ID for the Conan Exiles dedicated server (do not change)
+  steam_app_id: "443030"
+  # Server startup script name (produced by SteamCMD)
+  binary: ConanSandboxServer.sh
+
+tmux:
+  # tmux session name used to run the server
+  session: conan
+  # Terminal width in columns
+  width: 220
+  # Terminal height in rows
+  height: 50
+
+params:
+  # Map to load: ConanSandbox (Exiled Lands) or ConanSandbox_DLC_Siptah (Isle of Siptah)
+  map: ConanSandbox
+  # Server name shown in the in-game server browser
+  name: "My Conan Exiles Server"
+  # Maximum simultaneous players
+  max_players: 40
+  # Game port (UDP)
+  port: 7777
+  # Steam query port (UDP)
+  query_port: 27015
+  # RCON remote console port (TCP)
+  rcon_port: 25575
+  # Enable RCON
+  rcon_enabled: true
+
+backups:
+  # Number of world save backups to retain before pruning
+  keep: 5
+  # Backup directory — leave empty to use <server.dir>/backups
+  dir: ""
+
+mods:
+  # Steam Workshop App ID for Conan Exiles mods (do not change)
+  app_id: "440900"
+  # Mods to install. Use the numeric Steam Workshop item ID.
+  # URL format: https://steamcommunity.com/sharedfiles/filedetails/?id=<id>
+  list:
+    - id: "880454836"
+      name: "Pippi - User & Server Management"
+    - id: "1159180273"
+      name: "Fashionist"
+    - id: "2050780234"
+      name: "Shadows of Skelos - Extended"

@@ -1,0 +1,21 @@
+{
+  "name": "conan-exiles-cli",
+  "version": "1.0.0",
+  "description": "Conan Exiles dedicated server management CLI",
+  "bin": {
+    "conan": "src/index.ts"
+  },
+  "scripts": {
+    "dev": "bunli dev",
+    "build": "bunli build --targets native"
+  },
+  "dependencies": {
+    "@bunli/core": "^0.9.1",
+    "yaml": "^2.7.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "bunli": "^0.9.1",
+    "@types/bun": "latest"
+  }
+}
