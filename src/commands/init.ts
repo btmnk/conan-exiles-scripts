@@ -2,6 +2,8 @@ import { defineCommand, option } from "@bunli/core";
 import { existsSync, writeFileSync } from "fs";
 import { resolve } from "path";
 import { z } from "zod";
+import { loadConfig } from "../config";
+import { isSteamCmdInstalled, isServerInstalled, isServerRunning } from "../lib/checks";
 
 function makeDefaultConfig(dir: string): string {
   return `# Conan Exiles dedicated server configuration
@@ -40,6 +42,10 @@ params:
   # rcon_port: 25575
   # Enable the RCON remote console interface
   # rcon_enabled: true
+  # Password required to join the server (leave commented for a public server)
+  # password: ""
+  # Admin password for in-game admin access
+  # admin_password: ""
 
 backups:
   # Number of rolling save backups to keep before pruning old ones
@@ -66,9 +72,10 @@ export default defineCommand({
       description: "Output path for the config file (default: ./config.yaml)",
       short: "c",
     }),
-    force: option(z.boolean().default(false), {
+    force: option(z.coerce.boolean().default(false), {
       description: "Overwrite an existing config file",
       short: "f",
+      argumentKind: "flag",
     }),
   },
   handler: async ({ flags, colors }) => {
@@ -85,9 +92,19 @@ export default defineCommand({
     console.log(colors.green(`Created: ${outPath}`));
     console.log(`  server.dir set to: ${cwd}`);
     console.log("");
+
+    const config = loadConfig(outPath);
+    const [steamCmdOk, serverOk, runningOk] = await Promise.all([
+      isSteamCmdInstalled(config.server.steamcmd),
+      Promise.resolve(isServerInstalled(config.server.dir, config.server.binary)),
+      isServerRunning(config.tmux.session),
+    ]);
+
+    const box = (done: boolean) => done ? colors.green("[✓]") : "[ ]";
+
     console.log("Next steps:");
-    console.log(`  1. Install SteamCMD: https://developer.valvesoftware.com/wiki/SteamCMD`);
-    console.log(`  2. Run \`conan install\` to download the server`);
-    console.log(`  3. Run \`conan start\` to launch`);
+    console.log(`  ${box(steamCmdOk)} 1. Install SteamCMD: https://developer.valvesoftware.com/wiki/SteamCMD`);
+    console.log(`  ${box(serverOk)} 2. Run \`conan install\` to download the server`);
+    console.log(`  ${box(runningOk)} 3. Run \`conan start\` to launch`);
   },
 });

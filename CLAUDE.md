@@ -49,6 +49,10 @@ This is a **Bun + bunli CLI** (`@bunli/core`) that manages a Conan Exiles dedica
 | Mod list | `<server.dir>/ConanSandbox/Mods/modlist.txt` |
 | Backups | `<server.dir>/backups` (or `backups.dir` in config) |
 
+## Config / Init sync rule
+
+After **any** edit to `src/config.ts` or `src/commands/init.ts`, run the `/check-init-config` skill to verify that `makeDefaultConfig` in `init.ts` still covers every field in `ConfigSchema`. Fix any discrepancies before finishing the task.
+
 ## Adding a New Command
 
 1. Create `src/commands/<name>.ts`, export a `defineCommand({...})` default.
