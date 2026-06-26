@@ -50,7 +50,14 @@ export function loadConfig(configPath?: string): Config {
   }
   const raw = readFileSync(path, "utf-8");
   const parsed = parse(raw);
-  // Pre-fill optional top-level sections so individual field defaults apply cleanly
-  const withSectionDefaults = { tmux: {}, params: {}, backups: {}, mods: {}, ...parsed };
+  // Sections that are absent or null (all keys commented out in YAML) fall back to {}
+  // so that Zod field-level defaults still apply.
+  const withSectionDefaults = {
+    ...parsed,
+    tmux: parsed?.tmux ?? {},
+    params: parsed?.params ?? {},
+    backups: parsed?.backups ?? {},
+    mods: parsed?.mods ?? {},
+  };
   return ConfigSchema.parse(withSectionDefaults);
 }
