@@ -2,8 +2,8 @@ import { defineCommand, option } from "@bunli/core";
 import { existsSync, writeFileSync } from "fs";
 import { resolve } from "path";
 import { z } from "zod";
-import { loadConfig } from "../config";
-import { isSteamCmdInstalled, isServerInstalled, isServerRunning } from "../lib/checks";
+import { loadConfig } from "../config.ts";
+import { isSteamCmdInstalled, isServerInstalled, isServerRunning } from "../lib/checks.ts";
 
 function makeDefaultConfig(dir: string): string {
   return `# Conan Exiles dedicated server configuration
@@ -96,7 +96,7 @@ export default defineCommand({
     const config = loadConfig(outPath);
     const [steamCmdOk, serverOk, runningOk] = await Promise.all([
       isSteamCmdInstalled(config.server.steamcmd),
-      Promise.resolve(isServerInstalled(config.server.dir, config.server.binary)),
+      isServerInstalled(config.server.dir, config.server.binary),
       isServerRunning(config.tmux.session),
     ]);
 

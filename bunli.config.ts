@@ -6,5 +6,8 @@ export default defineConfig({
   description: "Conan Exiles dedicated server management CLI",
   build: {
     targets: ["linux-x64"],
+    outdir: "./bin",
+    compress: true,
+    sourcemap: false,
   },
 });

@@ -1,6 +1,7 @@
 import { defineCommand, option } from "@bunli/core";
 import { z } from "zod";
 import { loadConfig } from "../config.ts";
+import { stopServer } from "../lib/server.ts";
 
 export default defineCommand({
   name: "stop",
@@ -33,14 +34,7 @@ export default defineCommand({
     }
 
     const spin = spinner(`Stopping server (session: ${session})...`);
-    await shell`tmux send-keys -t ${session} C-c`.quiet();
-    await Bun.sleep(5000);
-
-    const stillRunning = await shell`tmux has-session -t ${session}`.nothrow().quiet();
-    if (stillRunning.exitCode === 0) {
-      await shell`tmux kill-session -t ${session}`.quiet();
-    }
-
+    await stopServer(session);
     spin.succeed("Server stopped.");
   },
 });

@@ -2,7 +2,6 @@ import { existsSync } from "fs";
 import { join } from "path";
 
 export async function backupSaves(
-  shell: typeof Bun.$,
   serverDir: string,
   backupDir: string,
   keep: number,
@@ -18,11 +17,11 @@ export async function backupSaves(
     .slice(0, 15);
   const dest = join(backupDir, `save_${timestamp}`);
 
-  await shell`mkdir -p ${backupDir}`;
+  await Bun.$`mkdir -p ${backupDir}`;
   console.log(colors.green(`Creating backup: ${dest}`));
-  await shell`cp -r ${savedDir} ${dest}`;
+  await Bun.$`cp -r ${savedDir} ${dest}`;
 
-  const list = (await shell`find ${backupDir} -maxdepth 1 -type d -name "save_*"`.text())
+  const list = (await Bun.$`find ${backupDir} -maxdepth 1 -type d -name "save_*"`.text())
     .trim()
     .split("\n")
     .filter(Boolean)
@@ -31,7 +30,7 @@ export async function backupSaves(
   if (list.length > keep) {
     const toDelete = list.slice(0, list.length - keep);
     for (const old of toDelete) {
-      await shell`rm -rf ${old}`.quiet();
+      await Bun.$`rm -rf ${old}`.quiet();
     }
     console.log(colors.yellow(`Pruned ${toDelete.length} old backup(s), kept ${keep}.`));
   }

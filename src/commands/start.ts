@@ -1,5 +1,6 @@
 import { defineCommand, option } from "@bunli/core";
 import { existsSync } from "fs";
+import { join } from "path";
 import { z } from "zod";
 import { loadConfig } from "../config.ts";
 
@@ -26,7 +27,7 @@ export default defineCommand({
       return;
     }
 
-    const binaryPath = `${dir}/${binary}`;
+    const binaryPath = join(dir, binary);
     if (!existsSync(binaryPath)) {
       console.error(colors.yellow(`Binary not found: ${binaryPath}`));
       console.error("Run `conan install` first.");
@@ -35,7 +36,7 @@ export default defineCommand({
     await shell`chmod +x ${binaryPath}`.quiet();
 
     // Fix game.db filename case (Linux is case-sensitive)
-    const savedDir = `${dir}/ConanSandbox/Saved`;
+    const savedDir = join(dir, "ConanSandbox", "Saved");
     if (existsSync(savedDir)) {
       await shell`find ${savedDir} -maxdepth 1 -iname "game.db" ! -name "game.db" -exec bash -c 'mv "$1" "$(dirname "$1")/game.db"' _ {} \\;`
         .nothrow()

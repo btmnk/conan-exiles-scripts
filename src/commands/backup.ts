@@ -1,5 +1,4 @@
 import { defineCommand, option } from "@bunli/core";
-import { join } from "path";
 import { z } from "zod";
 import { loadConfig } from "../config.ts";
 import { backupSaves } from "../lib/backup.ts";
@@ -13,14 +12,11 @@ export default defineCommand({
       short: "c",
     }),
   },
-  handler: async ({ flags, shell, colors }) => {
+  handler: async ({ flags, colors }) => {
     const cfg = loadConfig(flags.config);
-    const { dir } = cfg.server;
-    const backupDir = cfg.backups.dir || join(dir, "backups");
-
-    await backupSaves(shell, dir, backupDir, cfg.backups.keep, colors);
+    await backupSaves(cfg.server.dir, cfg.backups.dir, cfg.backups.keep, colors);
 
     console.log(colors.green("Backup complete."));
-    console.log(`  Backups: ${backupDir}`);
+    console.log(`  Backups: ${cfg.backups.dir}`);
   },
 });

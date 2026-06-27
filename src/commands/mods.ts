@@ -3,6 +3,7 @@ import { existsSync, readdirSync } from "fs";
 import { join } from "path";
 import { z } from "zod";
 import { loadConfig } from "../config.ts";
+import { checkSteamCmd } from "../lib/checks.ts";
 
 function findPakFiles(dir: string): string[] {
   const results: string[] = [];
@@ -12,7 +13,7 @@ function findPakFiles(dir: string): string[] {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
       results.push(...findPakFiles(full));
-    } else if ((entry.name as string).endsWith(".pak")) {
+    } else if (entry.name.endsWith(".pak")) {
       results.push(full);
     }
   }
@@ -38,13 +39,7 @@ const updateCommand = defineCommand({
       return;
     }
 
-    const steamcmdCheck = await shell`${steamcmd} +quit`.nothrow().quiet();
-    if (steamcmdCheck.exitCode !== 0) {
-      console.error(colors.yellow(`SteamCMD not working: ${steamcmd}`));
-      console.error(`Install SteamCMD first, then set server.steamcmd in config.yaml if it is not on PATH.`);
-      console.error(`  https://developer.valvesoftware.com/wiki/SteamCMD#Downloading_SteamCMD`);
-      process.exit(1);
-    }
+    await checkSteamCmd(steamcmd, colors);
 
     console.log(colors.green(`Downloading ${list.length} mod(s) via SteamCMD...`));
     for (const mod of list) {
@@ -57,7 +52,6 @@ const updateCommand = defineCommand({
     // +@sSteamCmdForcePlatformType windows — mods are published as Windows Workshop items
     await shell`${steamcmd} +@sSteamCmdForcePlatformType windows +force_install_dir ${dir} +login anonymous ${workshopArgs} +quit`;
 
-    // Build modlist.txt
     const modsContentDir = join(dir, "steamapps/workshop/content", app_id);
     const modlistDir = join(dir, "ConanSandbox/Mods");
     const modlistPath = join(modlistDir, "modlist.txt");

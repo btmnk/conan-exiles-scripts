@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "fs";
-import { resolve } from "path";
+import { join, resolve } from "path";
 import { parse } from "yaml";
 import { z } from "zod";
 
@@ -38,7 +38,13 @@ export const ConfigSchema = z.object({
     app_id: z.coerce.string().default("440900"),
     list: z.array(ModSchema).default([]),
   }),
-});
+}).transform((cfg) => ({
+  ...cfg,
+  backups: {
+    ...cfg.backups,
+    dir: cfg.backups.dir ?? join(cfg.server.dir, "backups"),
+  },
+}));
 
 export type Config = z.infer<typeof ConfigSchema>;
 
@@ -56,6 +62,7 @@ export function loadConfig(configPath?: string): Config {
   // so that Zod field-level defaults still apply.
   const withSectionDefaults = {
     ...parsed,
+    server: parsed?.server ?? {},
     tmux: parsed?.tmux ?? {},
     params: parsed?.params ?? {},
     backups: parsed?.backups ?? {},

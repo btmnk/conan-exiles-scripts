@@ -1,7 +1,9 @@
 import { defineCommand, option } from "@bunli/core";
-import { existsSync } from "fs";
+import { join } from "path";
 import { z } from "zod";
 import { loadConfig } from "../config.ts";
+import { checkSteamCmd, checkCurrentUser } from "../lib/checks.ts";
+import { ensureBinaryExecutable } from "../lib/server.ts";
 
 export default defineCommand({
   name: "install",
@@ -16,34 +18,18 @@ export default defineCommand({
     const cfg = loadConfig(flags.config);
     const { user, dir, steamcmd, steam_app_id, binary } = cfg.server;
 
-    const currentUser = (await shell`id -un`.text()).trim();
-    if (currentUser !== user) {
-      console.log(
-        colors.yellow(
-          `Warning: running as '${currentUser}', expected '${user}'. Consider: sudo -u ${user} conan install`
-        )
-      );
-    }
-
-    const steamcmdCheck = await shell`${steamcmd} +quit`.nothrow().quiet();
-    if (steamcmdCheck.exitCode !== 0) {
-      console.error(colors.yellow(`SteamCMD not working: ${steamcmd}`));
-      console.error(`Install SteamCMD first, then set server.steamcmd in config.yaml if it is not on PATH.`);
-      console.error(`  https://developer.valvesoftware.com/wiki/SteamCMD#Downloading_SteamCMD`);
-      process.exit(1);
-    }
+    await checkCurrentUser(user, "install", colors);
+    await checkSteamCmd(steamcmd, colors);
 
     console.log(colors.green(`Downloading server files (App ID: ${steam_app_id})...`));
     await shell`mkdir -p ${dir}`;
     await shell`${steamcmd} +force_install_dir ${dir} +login anonymous +app_update ${steam_app_id} validate +quit`;
 
-    const binaryPath = `${dir}/${binary}`;
-    if (existsSync(binaryPath)) {
-      await shell`chmod +x ${binaryPath}`.quiet();
-      console.log(colors.green(`Binary set executable: ${binaryPath}`));
+    const found = await ensureBinaryExecutable(dir, binary);
+    if (found) {
+      console.log(colors.green(`Binary set executable: ${join(dir, binary)}`));
     } else {
-      console.log(colors.yellow(`Warning: binary not found at ${binaryPath}`));
-      await shell`find ${dir} -maxdepth 2 -name "*.sh" -exec chmod +x {} \\;`.nothrow().quiet();
+      console.log(colors.yellow(`Warning: binary not found at ${join(dir, binary)}`));
     }
 
     console.log("");
