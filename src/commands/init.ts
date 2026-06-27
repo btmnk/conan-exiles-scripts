@@ -1,9 +1,10 @@
-import { defineCommand, option } from "@bunli/core";
+import { Command } from "commander";
+import chalk from "chalk";
 import { existsSync, writeFileSync } from "fs";
 import { resolve } from "path";
-import { z } from "zod";
 import { loadConfig } from "../config.ts";
-import { isSteamCmdInstalled, isServerInstalled, isServerRunning } from "../lib/checks.ts";
+import { isSteamCmdInstalled, isServerInstalled } from "../services/checks.ts";
+import { isServerRunning } from "../services/server.ts";
 
 function makeDefaultConfig(dir: string): string {
   return `# Conan Exiles dedicated server configuration
@@ -64,47 +65,36 @@ mods:
 `;
 }
 
-export default defineCommand({
-  name: "init",
-  description: "Create a minimal config.yaml with sane defaults",
-  options: {
-    config: option(z.string().optional(), {
-      description: "Output path for the config file (default: ./config.yaml)",
-      short: "c",
-    }),
-    force: option(z.coerce.boolean().default(false), {
-      description: "Overwrite an existing config file",
-      short: "f",
-      argumentKind: "flag",
-    }),
-  },
-  handler: async ({ flags, colors }) => {
-    const cwd = process.cwd();
-    const outPath = resolve(cwd, flags.config ?? "config.yaml");
+export function registerInit(program: Command): void {
+  program
+    .command("init")
+    .description("Create a minimal config.yaml with sane defaults")
+    .option("-f, --force", "Overwrite an existing config file")
+    .action(async (opts) => {
+      const cwd = process.cwd();
+      const outPath = resolve(cwd, program.opts().config ?? "config.yaml");
 
-    if (existsSync(outPath) && !flags.force) {
-      console.error(colors.yellow(`Config already exists: ${outPath}`));
-      console.error(`Use --force to overwrite.`);
-      process.exit(1);
-    }
+      if (existsSync(outPath) && !opts.force) {
+        throw new Error(`Config already exists: ${outPath}\nUse --force to overwrite.`);
+      }
 
-    writeFileSync(outPath, makeDefaultConfig(cwd), "utf-8");
-    console.log(colors.green(`Created: ${outPath}`));
-    console.log(`  server.dir set to: ${cwd}`);
-    console.log("");
+      writeFileSync(outPath, makeDefaultConfig(cwd), "utf-8");
+      console.log(chalk.green(`Created: ${outPath}`));
+      console.log(`  server.dir set to: ${cwd}`);
+      console.log("");
 
-    const config = loadConfig(outPath);
-    const [steamCmdOk, serverOk, runningOk] = await Promise.all([
-      isSteamCmdInstalled(config.server.steamcmd),
-      isServerInstalled(config.server.dir, config.server.binary),
-      isServerRunning(config.tmux.session),
-    ]);
+      const config = loadConfig(outPath);
+      const [steamCmdOk, serverOk, runningOk] = await Promise.all([
+        isSteamCmdInstalled(config.server.steamcmd),
+        isServerInstalled(config.server.dir, config.server.binary),
+        isServerRunning(config.tmux.session),
+      ]);
 
-    const box = (done: boolean) => done ? colors.green("[✓]") : "[ ]";
+      const box = (done: boolean) => (done ? chalk.green("[✓]") : "[ ]");
 
-    console.log("Next steps:");
-    console.log(`  ${box(steamCmdOk)} 1. Install SteamCMD: https://developer.valvesoftware.com/wiki/SteamCMD`);
-    console.log(`  ${box(serverOk)} 2. Run \`conan install\` to download the server`);
-    console.log(`  ${box(runningOk)} 3. Run \`conan start\` to launch`);
-  },
-});
+      console.log("Next steps:");
+      console.log(`  ${box(steamCmdOk)} 1. Install SteamCMD: https://developer.valvesoftware.com/wiki/SteamCMD`);
+      console.log(`  ${box(serverOk)} 2. Run \`conan install\` to download the server`);
+      console.log(`  ${box(runningOk)} 3. Run \`conan start\` to launch`);
+    });
+}

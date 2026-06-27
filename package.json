@@ -6,17 +6,18 @@
     "conan": "src/index.ts"
   },
   "scripts": {
-    "dev": "bunli dev",
-    "build": "bunli build"
+    "dev": "bun src/index.ts",
+    "build": "bun build --compile src/index.ts --outfile bin/conan",
+    "build:script": "bun build --target=bun src/index.ts --outfile bin/conan.js"
   },
   "dependencies": {
-    "@bunli/core": "0.9.1",
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
     "yaml": "2.9.0",
     "zod": "4.4.3"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/node": "26.0.1",
-    "bunli": "0.9.1"
+    "@types/node": "26.0.1"
   }
 }

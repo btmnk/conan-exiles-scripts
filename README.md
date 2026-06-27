@@ -14,14 +14,13 @@ bun install
 **Option A — standalone binary** (no Bun needed at runtime, ~90 MB):
 ```bash
 bun run build              # produces bin/conan
-sudo cp bin/conan-standalone /usr/local/bin/conan
+sudo cp bin/conan /usr/local/bin/conan
 ```
 
 **Option B — script bundle** (requires Bun on PATH, much smaller):
 ```bash
-bun run build:script       # produces bin/conan
-chmod +x bin/conan
-sudo cp bin/conan /usr/local/bin/conan
+bun run build:script       # produces bin/conan.js
+sudo cp bin/conan.js /usr/local/bin/conan
 ```
 
 ```bash
@@ -33,7 +32,11 @@ conan start
 
 ## Commands
 
-All commands accept `-c <path>` / `--config <path>` for a non-default config file.
+The `-c <path>` / `--config <path>` flag is global and must come **before** the command name:
+
+```bash
+conan -c /path/to/config.yaml status
+```
 
 | Command | Description |
 |---|---|
@@ -86,7 +89,7 @@ mods:
 ## Development
 
 ```bash
-bun run dev                  # hot-reload via bunli dev
-bun src/index.ts <command>   # run directly without building
+bun run dev                  # run CLI directly (pass args after --)
+bun src/index.ts <command>   # equivalent, run without building
 bunx tsc --noEmit            # type-check
 ```

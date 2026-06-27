@@ -1,72 +1,54 @@
-import { defineCommand, option } from "@bunli/core";
+import { Command } from "commander";
+import chalk from "chalk";
 import { existsSync } from "fs";
 import { join } from "path";
-import { z } from "zod";
 import { loadConfig } from "../config.ts";
+import { isServerRunning, buildLaunchCommand, fixGameDbCase, startServer } from "../services/server.ts";
 
-export default defineCommand({
-  name: "start",
-  description: "Start the Conan Exiles server in a tmux session",
-  options: {
-    config: option(z.string().optional(), {
-      description: "Path to config.yaml",
-      short: "c",
-    }),
-  },
-  handler: async ({ flags, shell, colors }) => {
-    const cfg = loadConfig(flags.config);
-    const { dir, binary } = cfg.server;
-    const { session } = cfg.tmux;
-    const { map, name, max_players, port, query_port, rcon_port, rcon_enabled, password, admin_password } = cfg.params;
+export function registerStart(program: Command): void {
+  program
+    .command("start")
+    .description("Start the Conan Exiles server in a tmux session")
+    .action(async () => {
+      const cfg = loadConfig(program.opts().config);
+      const { dir, binary } = cfg.server;
+      const { session } = cfg.tmux;
+      const { map, name, max_players, port, query_port, rcon_port, rcon_enabled, password, admin_password } = cfg.params;
 
-    const sessionRunning = await shell`tmux has-session -t ${session}`.nothrow().quiet();
-    if (sessionRunning.exitCode === 0) {
-      console.log(colors.yellow(`Session '${session}' is already running.`));
-      console.log(`  Attach: tmux attach -t ${session}`);
-      console.log(`  Stop:   conan stop`);
-      return;
-    }
+      const running = await isServerRunning(session);
+      if (running) {
+        console.log(chalk.yellow(`Session '${session}' is already running.`));
+        console.log(`  Attach: tmux attach -t ${session}`);
+        console.log(`  Stop:   conan stop`);
+        return;
+      }
 
-    const binaryPath = join(dir, binary);
-    if (!existsSync(binaryPath)) {
-      console.error(colors.yellow(`Binary not found: ${binaryPath}`));
-      console.error("Run `conan install` first.");
-      process.exit(1);
-    }
-    await shell`chmod +x ${binaryPath}`.quiet();
+      const binaryPath = join(dir, binary);
+      if (!existsSync(binaryPath)) {
+        throw new Error(`Binary not found: ${binaryPath}\nRun \`conan install\` first.`);
+      }
 
-    // Fix game.db filename case (Linux is case-sensitive)
-    const savedDir = join(dir, "ConanSandbox", "Saved");
-    if (existsSync(savedDir)) {
-      await shell`find ${savedDir} -maxdepth 1 -iname "game.db" ! -name "game.db" -exec bash -c 'mv "$1" "$(dirname "$1")/game.db"' _ {} \\;`
-        .nothrow()
-        .quiet();
-    }
+      await fixGameDbCase(dir);
 
-    // Build the launch command that tmux will type into the terminal
-    const launchCmd = [
-      `cd ${dir}`,
-      `&&`,
-      binaryPath,
-      map,
-      `-port=${port}`,
-      `-QueryPort=${query_port}`,
-      `-RCONPort=${rcon_port}`,
-      `-RCONEnabled=${rcon_enabled}`,
-      `-MaxPlayers=${max_players}`,
-      `-ServerName="${name}"`,
-      password ? `-ServerPassword="${password}"` : null,
-      admin_password ? `-AdminPassword="${admin_password}"` : null,
-      `-log`,
-      `-userdir=${dir}/ConanSandbox`,
-    ].filter(Boolean).join(" ");
+      const launchCmd = buildLaunchCommand({
+        dir,
+        binary,
+        map,
+        name,
+        maxPlayers: max_players,
+        port,
+        queryPort: query_port,
+        rconPort: rcon_port,
+        rconEnabled: rcon_enabled,
+        password,
+        adminPassword: admin_password,
+      });
 
-    await shell`tmux new-session -d -s ${session}`;
-    await shell`tmux send-keys -t ${session} ${launchCmd} Enter`;
+      await startServer(session, launchCmd);
 
-    console.log(colors.green(`Server started in tmux session '${session}'.`));
-    console.log(`  Attach:  tmux attach -t ${session}`);
-    console.log(`  Logs:    tail -f ${dir}/ConanSandbox/Saved/Logs/ConanSandbox.log`);
-    console.log(`  Status:  conan status`);
-  },
-});
+      console.log(chalk.green(`Server started in tmux session '${session}'.`));
+      console.log(`  Attach:  tmux attach -t ${session}`);
+      console.log(`  Logs:    tail -f ${dir}/ConanSandbox/Saved/Logs/ConanSandbox.log`);
+      console.log(`  Status:  conan status`);
+    });
+}
